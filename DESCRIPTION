@@ -1,0 +1,15 @@
+Package: rddlpy
+Type: Package
+Title: R Wrapper voor ddlpy (Deltares Data Distributie Laag)
+Version: 0.1.0
+Authors@R: c(person(given = "Willem", family = "Stolte", role = c("aut")),person(given = "M365", family = "Copilot", role = c("cre")))
+Description: Een dunne R-wrapper rond de Python package 'ddlpy' om locaties en metingen van Rijkswaterstaat's Digitale Delta (DDL) op te vragen. Maakt gebruik van 'reticulate' om Python-functies aan te roepen en geeft resultaten terug als R data.frame.
+Depends: R (>= 4.1)
+Imports: reticulate
+Suggests: tibble, jsonlite
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.1
+URL: https://deltares.github.io/ddlpy/
+BugReports: https://github.com/Deltares/ddlpy/issues
