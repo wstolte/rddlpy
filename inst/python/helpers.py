@@ -1,16 +1,18 @@
 
-# Helpers to make ddlpy calls easier from R via reticulate
+# helpers.py (schets)
 import ddlpy
 import pandas as pd
-from typing import Optional
 
-def get_locations(catalog_filter: Optional[dict] = None, use_cache: bool = True) -> pd.DataFrame:
-    return ddlpy.locations(catalog_filter=catalog_filter, use_cache=use_cache)
-
-def measurements_by_index(index_code: str, start_date, end_date) -> pd.DataFrame:
-    """Look up location row by index and call measurements."""
+def measurements_by_index(index_code, start_date, end_date,
+                          grootheid="WATHTE", groepering="NVT", hoedanigheid="NAP"):
     locs = ddlpy.locations()
-    if index_code not in locs.index:
-        raise KeyError(f"index '{index_code}' not found in locations index")
-    row = locs.loc[index_code]
+    sel = locs.loc[
+        locs.index.isin([index_code]) &
+        locs["Grootheid.Code"].isin([grootheid]) &
+        locs["Groepering.Code"].isin([groepering]) &
+        locs["Hoedanigheid.Code"].isin([hoedanigheid])
+    ]
+    if len(sel) < 1:
+        raise ValueError(f"Geen match voor {index_code} met filters {grootheid}/{groepering}/{hoedanigheid}.")
+    row = sel.iloc[0]
     return ddlpy.measurements(row, start_date=start_date, end_date=end_date)
