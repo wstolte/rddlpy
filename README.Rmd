@@ -1,0 +1,56 @@
+
+# rddlpy
+
+Een dunne R-wrapper om [ddlpy](https://deltares.github.io/ddlpy/) aan te roepen via `reticulate` en resultaten als `data.frame` terug te geven.
+
+## Installatie
+
+1. Installeer Python (3.9+ aanbevolen) en zorg dat `pip` werkt.
+2. Installeer `ddlpy` in je (reticulate) Python-omgeving:
+
+```{r}
+install.packages("reticulate")
+library(rddlpy)
+install_ddlpy()  # installeert rws-ddlpy[netcdf,examples]
+```
+
+
+```{r diagnose}
+
+
+```
+
+
+
+
+3. Laad en gebruik functies:
+
+```{r}
+library(rddlpy)
+
+locs <- ddl_locations()
+head(locs)
+
+meas <- ddl_measurements(
+  locatie_naam = "Hoek van Holland",
+  start_date = as.POSIXct("2023-01-01", tz = "UTC"),
+  end_date   = as.POSIXct("2023-01-15", tz = "UTC"),
+  grootheid = "WATHTE",     # waterstand (voorbeeld uit docs)
+  groepering = "",       # tijdreeks
+  hoedanigheid = "NAP"      # referentievlak
+)
+
+plot(meas$`Tijdstip.Begin`, meas$`Meetwaarde.Waarde_Numeriek`, type = "l")
+
+```
+
+## Opzet
+
+- `ddl_locations()` roept `ddlpy.locations()` en geeft een R `data.frame` terug.
+- `ddl_measurements(index_code, start_date, end_date)` zoekt de locatie op en roept `ddlpy.measurements()`.
+
+Voor gevorderde filtering kun je direct `pandas`-operaties doen via `reticulate`, of de `helpers.py` uitbreiden.
+
+## Licentie
+
+GPL-3, in lijn met ddlpy.
