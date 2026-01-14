@@ -15,8 +15,8 @@ install_ddlpy()  # installeert rws-ddlpy[netcdf,examples]
 ```
 
 
-```{r diagnose}
-
+```{r sanity-test}
+reticulate::py_config()
 
 ```
 
