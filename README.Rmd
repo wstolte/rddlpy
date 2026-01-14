@@ -20,6 +20,27 @@ reticulate::py_config()
 
 ```
 
+```{r sanity-test}
+
+
+devtools::load_all()
+reticulate::py_config()  # moet jouw Python + 'rws-ddlpy' tonen
+
+meas <- rddlpy::ddl_measurements(
+  "Hoek van Holland",
+  start_date = as.POSIXct("2023-01-01", tz = "UTC"),
+  end_date   = as.POSIXct("2023-01-15", tz = "UTC"),
+  grootheid  = "WATHTE",
+  groepering = "",      # expliciet leeg veld selecteren
+  hoedanigheid = "NAP",
+  procestype = "meting"
+)
+
+
+head(meas)
+
+
+```
 
 
 
@@ -31,14 +52,17 @@ library(rddlpy)
 locs <- ddl_locations()
 head(locs)
 
-meas <- ddl_measurements(
-  locatie_naam = "Hoek van Holland",
+
+meas <- rddlpy::ddl_measurements(
+  "HOEKVHLD",
   start_date = as.POSIXct("2023-01-01", tz = "UTC"),
   end_date   = as.POSIXct("2023-01-15", tz = "UTC"),
-  grootheid = "WATHTE",     # waterstand (voorbeeld uit docs)
-  groepering = "",       # tijdreeks
-  hoedanigheid = "NAP"      # referentievlak
+  grootheid  = "WATHTE",
+  groepering = "NVT",
+  hoedanigheid = "NAP",
+  procestype = "meting"   # <-- nieuw
 )
+
 
 plot(meas$`Tijdstip.Begin`, meas$`Meetwaarde.Waarde_Numeriek`, type = "l")
 
