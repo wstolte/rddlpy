@@ -21,16 +21,22 @@ library(rddlpy)
 locs <- ddl_locations()
 head(locs)
 
-meas <- ddl_measurements(
-  "HOEKVHLD",
+devtools::load_all()
+reticulate::py_config()  # moet jouw Python + 'rws-ddlpy' tonen
+
+meas <- rddlpy::ddl_measurements(
+  "Hoek van Holland",
   start_date = as.POSIXct("2023-01-01", tz = "UTC"),
   end_date   = as.POSIXct("2023-01-15", tz = "UTC"),
-  grootheid = "WATHTE",     # waterstand (voorbeeld uit docs)
-  groepering = "NVT",       # tijdreeks
-  hoedanigheid = "NAP"      # referentievlak
+  grootheid  = "WATHTE",
+  groepering = "",      # expliciet leeg veld selecteren
+  hoedanigheid = "NAP",
+  procestype = "meting"
 )
 
-plot(meas$`Tijdstip.Begin`, meas$`Meetwaarde.Waarde_Numeriek`, type = "l")
+
+head(meas)
+
 
 ```
 
