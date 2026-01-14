@@ -8,7 +8,7 @@ Een dunne R-wrapper om [ddlpy](https://deltares.github.io/ddlpy/) aan te roepen 
 1. Installeer Python (3.9+ aanbevolen) en zorg dat `pip` werkt.
 2. Installeer `ddlpy` in je (reticulate) Python-omgeving:
 
-```r
+```{r}
 install.packages("reticulate")
 library(rddlpy)
 install_ddlpy()  # installeert rws-ddlpy[netcdf,examples]
@@ -16,21 +16,22 @@ install_ddlpy()  # installeert rws-ddlpy[netcdf,examples]
 
 3. Laad en gebruik functies:
 
-```r
+```{r}
 library(rddlpy)
 locs <- ddl_locations()
 head(locs)
 
 meas <- ddl_measurements(
   "HOEKVHLD",
-  start_date = as.POSIXct("2023-01-01"),
-  end_date   = as.POSIXct("2023-01-15"),
-  grootheid = "WATHTE",
-  groepering = "NVT",
-  hoedanigheid = "NAP"
+  start_date = as.POSIXct("2023-01-01", tz = "UTC"),
+  end_date   = as.POSIXct("2023-01-15", tz = "UTC"),
+  grootheid = "WATHTE",     # waterstand (voorbeeld uit docs)
+  groepering = "NVT",       # tijdreeks
+  hoedanigheid = "NAP"      # referentievlak
 )
 
 plot(meas$`Tijdstip.Begin`, meas$`Meetwaarde.Waarde_Numeriek`, type = "l")
+
 ```
 
 ## Opzet

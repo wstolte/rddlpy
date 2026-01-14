@@ -8,43 +8,58 @@
 #' @param hoedanigheid Character filter; default "NAP"
 #' @param convert Logical; TRUE = data.frame
 #' @export
-ddl_measurements <- function(index_code,
-                             start_date,
-                             end_date,
+
+ddl_measurements <- function(locatie_naam = "Hoek van Holland",
+                             start_date, end_date,
                              grootheid = "WATHTE",
-                             groepering = "NVT",
+                             groepering = "",       # "GETETM2", "GETETBRKD2"
+                             procestype = "meting", # "verwachting", "astronomisch", 
                              hoedanigheid = "NAP",
                              convert = TRUE) {
-  
   if (!requireNamespace("reticulate", quietly = TRUE)) {
     stop("'reticulate' is vereist; install.packages('reticulate')", call. = FALSE)
   }
   ddl <- reticulate::import("ddlpy", delay_load = TRUE)
   
-  locs <- ddl$locations()
-  bool_station      <- locs$index$isin(list(index_code))
-  bool_grootheid    <- locs$`__getitem__`("Grootheid.Code")$isin(list(grootheid))
-  bool_groepering   <- locs$`__getitem__`("Groepering.Code")$isin(list(groepering))
-  bool_hoedanigheid <- locs$`__getitem__`("Hoedanigheid.Code")$isin(list(hoedanigheid))
+  # 1) Haal pandas.DataFrame en zet óók even om naar R df
+  locs_py <- ddl$locations()
+  locs_r  <- reticulate::py_to_r(locs_py)
   
-  mask     <- bool_station$`__and__`(bool_grootheid)$`__and__`(bool_groepering)$`__and__`(bool_hoedanigheid)
-  selected <- locs$loc(mask)
+  # In de notebooks/docs is de stationcode de index (en ook in kolom `Code`),
+  # we filteren in R:
+  rows <- which(
+    locs_r$Naam %in% locatie_naam &
+      locs_r$`Grootheid.Code`    %in% grootheid &
+      locs_r$`Groepering.Code`   %in% groepering &
+      locs_r$ProcesType          %in% procestype &
+      locs_r$`Hoedanigheid.Code` %in% hoedanigheid
+  )
   
-  if (reticulate::py_len(selected) < 1L) {
-    available <- locs$loc(locs$index$isin(list(index_code)))
-    avail_r   <- tryCatch(reticulate::py_to_r(available), error = function(e) NULL)
-    msg <- sprintf("Geen match voor '%s' met filters %s/%s/%s.\n", index_code, grootheid, groepering, hoedanigheid)
-    if (!is.null(avail_r) && nrow(avail_r) > 0) {
-      msg <- paste0(msg, "Beschikbare combinaties (eerste 5):\n",
-                    paste(utils::capture.output(print(utils::head(avail_r, 5L))), collapse = "\n"))
+  if (length(rows) < 1L) {
+    # Toon wat er wél is voor dit station
+    avail <- subset(locs_r, Naam == locatie_naam,
+                    select = c("Naam","Grootheid.Code","Groepering.Code", "ProcesType", "Hoedanigheid.Code"))
+    msg <- sprintf("Geen match voor '%s' met filters %s/%s/%s.\n",
+                   locatie_naam, grootheid, groepering, hoedanigheid)
+    if (nrow(avail) > 0) {
+      msg <- paste0(
+        msg, "Beschikbare combinaties (eerste 5):\n",
+        paste(utils::capture.output(print(utils::head(avail, 5L))), collapse = "\n")
+      )
     }
     stop(msg, call. = FALSE)
   }
   
-  row     <- selected$iloc[[0L]]
-  py_meas <- ddl$measurements(row,
-                              start_date = reticulate::r_to_py(start_date),
-                              end_date   = reticulate::r_to_py(end_date))
+  # 2) Pak de éérste match als pandas Series via iloc (0-based index!)
+  i0  <- as.integer(rows[1] - 1L)
+  row <- locs_py$iloc[[i0]]
+  
+  # 3) Roep ddlpy.measurements aan
+  py_meas <- ddl$measurements(
+    row,
+    start_date = reticulate::r_to_py(start_date),
+    end_date   = reticulate::r_to_py(end_date)
+  )
   
   if (isTRUE(convert)) {
     res <- reticulate::py_to_r(py_meas)
